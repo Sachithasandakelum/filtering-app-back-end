@@ -2,9 +2,7 @@ package lk.ijse.dep11.app;
 
 import org.junit.jupiter.api.*;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,7 +14,7 @@ public class DatabaseTest {
     @BeforeEach
     void setUp() throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/dep11_filtering_app");
+        connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/dep11_filtering_app" , "root" , "sachitha18");
     }
 
     @AfterEach
@@ -26,26 +24,39 @@ public class DatabaseTest {
 
     @Order(1)
     @Test
-    void testDBExceed1000Records(){
-        System.out.println("test1");
+    void testDBExceed1000Records() throws Exception {
+        Statement stm = connection.createStatement();
+        ResultSet rst = stm.executeQuery("SELECT COUNT(*) FROM customer");
+        rst.next();
+        int numberOfRecords = rst.getInt(1);
+
+        assertTrue(numberOfRecords >= 1000 );
     }
 
     @Order(2)
     @Test
-    void testValidContactNumbers(){
-        System.out.println("test2");
+    void testValidContactNumbers() throws Exception{
+        Statement stm = connection.createStatement();
+        ResultSet rst = stm.executeQuery("SELECT * FROM customer WHERE contact NOT REGEXP '\\d{3}-\\d{7}'");
+
+        assertFalse(rst.next());
     }
 
     @Order(3)
     @Test
-    void testUniqueContactNumbers(){
-        System.out.println("test3");
+    void testUniqueContactNumbers() throws Exception{
+        Statement stm = connection.createStatement();
+        ResultSet rst = stm.executeQuery("SELECT contact, COUNT(contact) as count FROM customer GROUP BY contact HAVING count > 1");
+        assertFalse(rst.next());
     }
 
     @Order(4)
     @Test
-    void testUniqueCustomerNames(){
-        System.out.println("test4");
+    void testUniqueCustomerNames() throws Exception{
+        Statement stm = connection.createStatement();
+        ResultSet rst = stm.executeQuery("SELECT CONCAT(first_name,last_name) AS name , COUNT(*) AS count FROM customer GROUP BY first_name,last_name HAVING count > 1");
+
+        assertFalse(rst.next());
     }
 
 
