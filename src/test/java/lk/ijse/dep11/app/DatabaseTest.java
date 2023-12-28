@@ -29,7 +29,7 @@ public class DatabaseTest {
         ResultSet rst = stm.executeQuery("SELECT COUNT(*) FROM customer");
         rst.next();
         int numberOfRecords = rst.getInt(1);
-
+        System.out.println(numberOfRecords);
         assertTrue(numberOfRecords >= 1000 );
     }
 
@@ -37,7 +37,7 @@ public class DatabaseTest {
     @Test
     void testValidContactNumbers() throws Exception{
         Statement stm = connection.createStatement();
-        ResultSet rst = stm.executeQuery("SELECT * FROM customer WHERE contact NOT REGEXP '\\d{3}-\\d{7}'");
+        ResultSet rst = stm.executeQuery("SELECT * FROM customer WHERE contact NOT REGEXP '\\\\d{3}-\\\\d{7}'");
 
         assertFalse(rst.next());
     }
