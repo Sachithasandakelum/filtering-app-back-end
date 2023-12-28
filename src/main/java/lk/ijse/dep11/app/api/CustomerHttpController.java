@@ -48,7 +48,7 @@ public class CustomerHttpController {
                     "WHERE id LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR " +
                     "contact LIKE ? OR country LIKE ?");
             if (q == null) q = "";
-            for (int i = 1; i <= 5; i++) stm.setObject(i, "%" + q + "%");
+            for (int i = 1; i <= 6; i++) stm.setObject(i, "%" + q + "%");
             ResultSet rst = stm.executeQuery();
             return getCustomerList(rst);
         } catch (SQLException e) {
@@ -74,7 +74,7 @@ public class CustomerHttpController {
                     "contact LIKE ? OR country LIKE ? ORDER BY " + colNames.get(COLUMN_INDEX) + " " +
                     (order.equalsIgnoreCase("asc") ? "ASC" : "DESC"));
             if (q == null) q = "";
-            for (int i = 1; i <= 5; i++) stm.setObject(i, "%" + q + "%");
+            for (int i = 1; i <= 6; i++) stm.setObject(i, "%" + q + "%");
             ResultSet rst = stm.executeQuery();
             return getCustomerList(rst);
         } catch (SQLException e) {
@@ -93,7 +93,8 @@ public class CustomerHttpController {
             PreparedStatement stm = connection.prepareStatement("SELECT * FROM customer WHERE id LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR " +
                     "contact LIKE ? OR country LIKE ? LIMIT ? OFFSET ?");
 
-            for (int i = 1; i <5 ; i++) stm.setObject(i,"%"+q+"%");
+            if (q == null) q = "";
+            for (int i = 1; i <6 ; i++) stm.setObject(i,"%"+q+"%");
             stm.setInt(6,size);
             stm.setInt(7,(page-1)*size);
             ResultSet rst = stm.executeQuery();
@@ -125,7 +126,7 @@ public class CustomerHttpController {
 
 
             if (q == null) q = "";
-            for (int i = 1; i <= 5; i++) stm.setObject(i, "%" + q + "%");
+            for (int i = 1; i <= 6; i++) stm.setObject(i, "%" + q + "%");
             stm.setInt(6, size);
             stm.setInt(7, (page - 1) * size);
             ResultSet rst = stm.executeQuery();
