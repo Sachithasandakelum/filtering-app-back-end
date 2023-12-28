@@ -5,14 +5,13 @@ import com.zaxxer.hikari.HikariDataSource;
 import lk.ijse.dep11.app.to.CustomerTO;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.annotation.PreDestroy;
 import javax.validation.ConstraintViolationException;
+import javax.validation.constraints.Pattern;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,6 +21,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/customers")
+@Validated
+@CrossOrigin
 public class CustomerHttpController {
     private final HikariDataSource pool;
 
@@ -65,7 +66,30 @@ public class CustomerHttpController {
     }
 
     @GetMapping(params = {"sort"})
-    public void getAllSortedCustomers() {
+    public List<CustomerTO> getAllSortedCustomers(String q,
+                                                  @Pattern(regexp = "^(id|first_name|last_name|contact|country),(asc|desc)$",
+                                                  message = "Invalid sorting parameter") String sort) {
+        String[] splitText = sort.split(",");
+        String colName = splitText[0];
+        String order = splitText[1];
+
+        List<String> colNames = List.of("id", "first_name", "last_name", "contact", "country");
+
+        try(Connection connection = pool.getConnection()) {
+            final int COLUMN_INDEX = colNames.indexOf(colName.intern());
+
+            PreparedStatement stm = connection.prepareStatement("SELECT * FROM customer " +
+                    "WHERE id LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR " +
+                    "contact LIKE ? OR country LIKE ? ORDER BY " + colNames.get(COLUMN_INDEX) + " " +
+                    (order.equalsIgnoreCase("asc") ? "ASC" : "DESC"));
+            if (q == null) q = "";
+            for (int i = 1; i <= 5; i++) stm.setObject(i, "%" + q + "%");
+            ResultSet rst = stm.executeQuery();
+            return getCustomerList(rst);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
 
     }
 
