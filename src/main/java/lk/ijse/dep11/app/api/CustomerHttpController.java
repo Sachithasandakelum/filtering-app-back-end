@@ -3,6 +3,7 @@ package lk.ijse.dep11.app.api;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lk.ijse.dep11.app.to.CustomerTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -25,17 +26,10 @@ import java.util.List;
 @Validated
 @CrossOrigin
 public class CustomerHttpController {
-    private final HikariDataSource pool;
 
-    public CustomerHttpController(Environment env) {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(env.getRequiredProperty("spring.datasource.url"));
-        config.setUsername(env.getRequiredProperty("spring.datasource.username"));
-        config.setPassword(env.getRequiredProperty("spring.datasource.password"));
-        config.setDriverClassName(env.getRequiredProperty("spring.datasource.driver-class-name"));
-        config.setMaximumPoolSize(env.getRequiredProperty("spring.datasource.hikari.maximum-pool-size", Integer.class));
-        pool = new HikariDataSource(config);
-    }
+    @Autowired
+    private HikariDataSource pool;
+
 
     @ExceptionHandler(ConstraintViolationException.class)
     public String exceptionHandler(ConstraintViolationException exp) {
@@ -46,10 +40,6 @@ public class CustomerHttpController {
 
     }
 
-    @PreDestroy
-    private void destroy() {
-        pool.close();
-    }
 
     @GetMapping
     public List<CustomerTO> getAllCustomers(String q) {
