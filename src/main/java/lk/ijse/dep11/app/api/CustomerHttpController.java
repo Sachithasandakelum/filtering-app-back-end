@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.annotation.PreDestroy;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Positive;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -95,7 +96,21 @@ public class CustomerHttpController {
 
 
     @GetMapping(params = {"page","size"})
-    public void getAllPagenatedCustomers() {
+    public List<CustomerTO> getAllPagenatedCustomers(String q,
+                                                     @Positive(message = "Page can't be zero or negative") int page,
+                                                     @Positive(message = "Size can't be zero or negative") int size) {
+        try (Connection connection = pool.getConnection()){
+            PreparedStatement stm = connection.prepareStatement("SELECT * FROM customer WHERE id LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR " +
+                    "contact LIKE ? OR country LIKE ? LIMIT ? OFFSET ?");
+
+            for (int i = 1; i <5 ; i++) stm.setObject(i,"%"+q+"%");
+            stm.setInt(6,size);
+            stm.setInt(7,(page-1)*size);
+            ResultSet rst = stm.executeQuery();
+            return getCustomerList(rst);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
