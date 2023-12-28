@@ -115,8 +115,34 @@ public class CustomerHttpController {
     }
 
     @GetMapping(params = {"page","size","sort"})
-    public void getAllPagenatedAndSortedCustomers() {
+    public List<CustomerTO> getAllPagenatedAndSortedCustomers(String q,
+                                                  @Positive(message = "Page can't be zero or negative") int page,
+                                                  @Positive(message = "Size can't be zero or negative") int size,
+                                                  @Pattern(regexp = "^(id|first_name|last_name|contact|country),(asc|desc)$",
+                                                  message = "Invalid sort parameter") String sort) {
+        String[] splitText = sort.split(",");
+        String colName = splitText[0];
+        String order = splitText[1];
+        List<String> colNames = List.of("id", "first_name", "last_name", "contact", "country");
 
+        try (Connection connection = pool.getConnection()){
+            final int COLUMN_INDEX = colNames.indexOf(colName.intern());
+            PreparedStatement stm = connection.prepareStatement("SELECT * FROM customer " +
+                    "WHERE id LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR " +
+                    "contact LIKE ? OR country LIKE ? ORDER BY " + colNames.get(COLUMN_INDEX) + " " +
+                    (order.equalsIgnoreCase("asc") ? "ASC" : "DESC") +
+                    " LIMIT ? OFFSET ?");
+
+
+            if (q == null) q = "";
+            for (int i = 1; i <= 5; i++) stm.setObject(i, "%" + q + "%");
+            stm.setInt(6, size);
+            stm.setInt(7, (page - 1) * size);
+            ResultSet rst = stm.executeQuery();
+            return getCustomerList(rst);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
