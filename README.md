@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Welcome to the back-end API of [Your Project Name]! This API serves as the server-side implementation for a filtering application, allowing users to retrieve customer information with various filtering options. The application is built using the Spring Web MVC framework, MySQL database for data storage, and HikariCP for database connection pooling.
+Welcome to the back-end API of fILTERING APP! This API serves as the server-side implementation for a filtering application, allowing users to retrieve customer information with various filtering options. The application is built using the Spring Web MVC framework, MySQL database for data storage, and HikariCP for database connection pooling.
 
 ## Technologies Used
 
